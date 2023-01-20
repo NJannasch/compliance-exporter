@@ -12,6 +12,8 @@ pip3 install -r requirements.txt
 To access the data in the tenant the Username/Passwords/Tokens need to be provided as environemnt variables.
 An example is given in the `.env.template`.
 
+Credentials can be e.g. generated under **Settings -> Access Control -> Access Keys**.
+
 ### Execution
 Calling the help function
 ```bash
