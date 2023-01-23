@@ -124,12 +124,12 @@ def main(
 
     print("Starting csv generation")
     with open(output_file, "w") as csv_file:
-        writer = csv.writer(csv_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(csv_file, delimiter=';', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(
             [
                 "standard", "requirement_name", "requirement_id",
                 "section_id", "account_name", "account_id",
-                "provider", "rrn"
+                "provider", "rrn", "policies"
             ]
         )
 
@@ -148,13 +148,15 @@ def main(
                         scan_status,
                         account_group
                     )
+
                     for resource in findings.get('resources', []):
+                        policies = [policy['name'] if policy['id'] in section['associatedPolicyIds'] else "" for policy in resource['scannedPolicies']]
                         writer.writerow(
                             [
                                 standard['name'] ,requirement['name'],requirement['requirementId'],
                                 section['sectionId'],resource['accountName'],
                                 resource['accountId'],resource['cloudType'],
-                                resource.get('rrn', resource['id']), scan_status
+                                resource.get('rrn', resource['id']), scan_status, str(policies)
                             ]
                         )
 

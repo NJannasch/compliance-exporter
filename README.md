@@ -9,7 +9,7 @@ pip3 install -r requirements.txt
 ```
 
 ### Credential setup
-To access the data in the tenant the Username/Passwords/Tokens need to be provided as environemnt variables.
+To access the data in the tenant the Username/Passwords/Tokens need to be provided as environment variables.
 An example is given in the `.env.template`.
 
 ### Execution
@@ -24,6 +24,6 @@ python3 main.py --standard-name "ISO 27001:2013" --account-group "MyAccountGroup
 
 #### Example output
 ```
-standard,requirement_name,requirement_id,section_id,account_name,account_id,provider,rrn
+standard,requirement_name,requirement_id,section_id,account_name,account_id,provider,rrn,policies
 ....
 ```
