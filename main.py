@@ -25,8 +25,8 @@ class ComplianceHelper():
     def get_token(self):
         url = f"https://{self.stack}.prismacloud.io/login"
         payload = json.dumps({
-            "username": os.environ["USER"],
-            "password": os.environ["PASS"]
+            "username": os.environ["PC_USER"],
+            "password": os.environ["PC_PASS"]
         })
         headers = {
             'Content-Type': 'application/json'
