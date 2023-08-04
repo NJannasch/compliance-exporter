@@ -5,6 +5,7 @@ import os
 import requests
 import typer
 
+policy_cache = {}
 
 class ComplianceHelper():
     token: str = ""
@@ -106,6 +107,19 @@ class ComplianceHelper():
         response.raise_for_status()
         return response.json()
 
+    def get_policy_remediation(self, policy_id: str):
+        global policy_cache
+        if policy_cache.get(policy_id, False) is False:
+            # Policy cache setup
+            url = f"https://{self.stack}.prismacloud.io/policy/{policy_id}"
+
+            response = requests.request("GET", url, headers=self.headers, data={})
+            response.raise_for_status()
+
+            policy_cache[policy_id] = response.json()
+
+        return policy_cache[policy_id]
+
 app = typer.Typer(help="Compliance Exporter")
 
 @app.command()
@@ -113,7 +127,7 @@ def main(
     standard_name: str = typer.Option("ISO 27001:2013", help="ISO Standard for export"),
     account_group: str = typer.Option("PCS Demo Environments", help="Account Group for export"),
     output_file: str = typer.Option("out.csv", help="Output file"),
-    stack_name: str = typer.Option("api2.eu", help="Prisma Cloud stack")
+    stack_name: str = typer.Option("api.eu", help="Prisma Cloud stack")
     ):
 
     helper = ComplianceHelper(stack=stack_name)
@@ -129,7 +143,7 @@ def main(
             [
                 "standard", "requirement_name", "requirement_id",
                 "section_id", "account_name", "account_id",
-                "provider", "rrn", "policies"
+                "provider", "rrn", "resource_name", "scan_status", "policies"
             ]
         )
 
@@ -150,13 +164,21 @@ def main(
                     )
 
                     for resource in findings.get('resources', []):
-                        policies = [policy['name'] if policy['id'] in section['associatedPolicyIds'] else "" for policy in resource['scannedPolicies']]
+                        policy_results = []
+                        for policy in resource['scannedPolicies']:
+                            policy_results.append(
+                                {
+                                    'name': policy['name'] if policy['id'] in section['associatedPolicyIds'] else "",
+                                    'recommendation': helper.get_policy_remediation(policy['id'])['recommendation']
+                                }
+                                )
                         writer.writerow(
                             [
                                 standard['name'] ,requirement['name'],requirement['requirementId'],
                                 section['sectionId'],resource['accountName'],
                                 resource['accountId'],resource['cloudType'],
-                                resource.get('rrn', resource['id']), scan_status, str(policies)
+                                resource.get('rrn', resource['id']), resource['name'],
+                                scan_status, str(policy_results)
                             ]
                         )
 
